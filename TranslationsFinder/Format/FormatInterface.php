@@ -24,7 +24,7 @@ interface FormatInterface
      *
      * @return string The output
      */
-    public function outputTag( $tag, $file_names = array() );
+    public function outputTag( $tag, $file_names = array(), $is_source_file = false );
 
     /**
      * Prepares the string of a tag to be stored in the local format. Also for being compared to the current file.

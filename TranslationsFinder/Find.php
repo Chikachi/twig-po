@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Find extends Command
 {
     /* TO-DO: Plural is not working at all! */
-    const TAG_REGEX      = '/{% ?trans ?%}(.*)(?:{% ? plural (.*)?%}(.*))?{% ?endtrans ?%}/muU';
+    const TAG_REGEX      = '/{% ?trans \'(.*)\' %}|{% ?trans ?%}(.*)(?:{% ? plural (.*)?%}(.*))?{% ?endtrans ?%}/muU';
     const MODIFIER_REGEX = '/([a-zA-Z_0-9]+)|trans/muU';
 
     /**
@@ -36,6 +36,7 @@ class Find extends Command
     protected $verbose = false;
     protected $output_tags = false;
     protected $tag_regex;
+    protected $source_file = false;
 
     /**
      * @var Format\FormatInterface
@@ -78,6 +79,11 @@ class Find extends Command
                 'o',
                 InputOption::VALUE_NONE,
                 'Output the tags as they will appear in the final PO file'
+            )->addOption(
+                'source-file',
+                's',
+                InputOption::VALUE_NONE,
+                'Set the file to be source and therefore the value being same as the key'
             );
     }
 
@@ -169,6 +175,7 @@ class Find extends Command
         $this->output_tags = $input->getOption( 'output-tags' );
         $regex             = $input->getOption( 'tag-regex' );
         $this->tag_regex   = $regex ? $regex : self::TAG_REGEX;
+        $this->source_file = $input->getOption( 'source-file' );
     }
 
     /**
@@ -230,14 +237,14 @@ class Find extends Command
         $output = "";
         foreach ($tags as $tag => $file_names) {
 
-            $output .= $this->outputTag( $tag, $file_names );
+            $output .= $this->outputTag( $tag, $file_names, $this->source_file );
         }
         return $output;
     }
 
     protected function outputTag( $tag, $file_names = array() )
     {
-        return $this->format->outputTag( $tag, $file_names );
+        return $this->format->outputTag( $tag, $file_names, $this->source_file );
     }
 
     // TO-DO: Allow plurals!
@@ -265,7 +272,6 @@ class Find extends Command
         $matches = array_unique( $this->pregMatchAllFile( $filename, $this->tag_regex ) );
 
         foreach ($matches as $tag) {
-
             if (in_array( $this->format->outputString( $tag ), $existing_tags )) {
                 $this->n_matched_tags++;
                 continue;

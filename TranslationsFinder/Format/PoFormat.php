@@ -33,9 +33,10 @@ class PoFormat implements FormatInterface
      *
      * @return string The output
      */
-    public function outputTag( $tag, $file_names = array() )
+    public function outputTag( $tag, $file_names = array(), $is_source_file = false )
     {
         $tag    = $this->outputString( $tag );
+        $str    = $is_source_file ? $tag : '';
         $output = '';
         foreach ($file_names as $filename) {
 
@@ -49,7 +50,7 @@ EOT;
         $output .= <<<EOT
 
 msgid "$tag"
-msgstr ""
+msgstr "$str"
 
 EOT;
         return $output;
@@ -65,6 +66,7 @@ EOT;
     public function outputString( $string )
     {
 
+        $string = str_replace( '\\\'', '\'', $string );
         $string = preg_replace( array( '/{{ (.*) }}/muU', '/{{(.*)}}/muU' ), '%\1%', $string );
         $string = str_replace( '"', '\"', $string );
 
